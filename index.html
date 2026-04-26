@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>The Unremembered – Face Reflection</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      font-family: 'IBM Plex Mono', monospace;
+      background: black;
+      overflow: hidden;
+    }
+
+    #video-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: 0;
+      opacity: 1;
+      filter: blur(4px);
+      pointer-events: none;
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #reflectBtn {
+      font-family: inherit;
+      font-size: 20px;
+      padding: 12px 24px;
+      border: 2px solid #aaa;
+      border-radius: 8px;
+      background: transparent;
+      color: #eee;
+      cursor: pointer;
+      z-index: 2;
+      transition: all 0.4s ease;
+    }
+
+    #reflectBtn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    #scannerUI {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    #scannerUI.visible {
+      display: flex;
+      opacity: 1;
+    }
+
+    #webcamWrapper {
+      display: flex;
+      justify-content: center;
+      transition: transform 0.7s ease;
+    }
+
+    #webcamWrapper.lifted {
+      transform: translateY(-25px);
+    }
+
+    #webcam {
+      width: 320px;
+      border: 3px solid #888;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+    }
+
+    #webcam.visible {
+      opacity: 1;
+    }
+
+    #photoBox {
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-top: 10px;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+    }
+
+    #photoBox.loaded {
+      opacity: 1;
+    }
+
+    #photoBox.missing {
+      filter: grayscale(100%) blur(1px);
+      opacity: 0.6;
+    }
+
+    #statusBox {
+      margin-top: 20px;
+      max-width: 400px;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 12px 16px;
+      border-radius: 10px;
+      color: #ffcccc;
+      font-size: 16px;
+      line-height: 1.4;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.9s ease, transform 0.7s ease;
+    }
+
+    #statusBox.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #restartBtn {
+      font-family: inherit;
+      font-size: 16px;
+      padding: 10px 20px;
+      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid #aaa;
+      color: #eee;
+      border-radius: 8px;
+      cursor: pointer;
+      display: none;
+      transition: all 0.3s ease;
+    }
+
+    #restartBtn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    @keyframes pulseScan {
+      0%, 100% { color: #ffcccc; }
+      50% { color: white; }
+    }
+
+    .scanning {
+      animation: pulseScan 1s infinite;
+    }
+  </style>
+</head>
+<body>
+
+  <video id="video-bg" autoplay muted loop playsinline>
+    <source src="/backgrounds/holocaust_video.mp4" type="video/mp4" />
+  </video>
+
+  <main>
+    <button id="reflectBtn">Reflect</button>
+
+    <div id="scannerUI">
+      <div id="webcamWrapper">
+        <video id="webcam" autoplay muted playsinline></video>
+      </div>
+      <img id="photoBox" src="/images/question.png" alt="Matched face" />
+      <div id="statusBox">Initializing face scan...</div>
+      <button id="restartBtn">Reflect Again</button>
+    </div>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
