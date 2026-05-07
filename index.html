@@ -5,9 +5,10 @@
   <title>The Unremembered – Face Reflection</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
   
-  <style>
-    /* Prevent FOUC: Hide the interaction scene and the full background until the main CSS loads */
-    #interaction-scene, #full-bg {
+<style>
+    /* Prevent FOUC: Hide these ONLY before the transition starts */
+    body:not(.transitioning) #scannerUI, 
+    body:not(.transitioning) #full-bg {
       opacity: 0;
       pointer-events: none;
     }
