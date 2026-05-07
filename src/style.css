@@ -1,96 +1,296 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
+* {
   margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  font-family: 'IBM Plex Mono', monospace;
+  background: black;
+  overflow: hidden;
+  color: white;
+}
+
+/* --- INTRO SCENE --- */
+#intro-scene {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+}
+
+#full-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: 0; /* Sits behind the sliding stones */
+  opacity: 0; /* Hidden initially */
+  transition: opacity 1.5s ease 0.3s;
+}
+
+/* Stones */
+.stone {
+  position: absolute;
+  top: 0;
+  height: 100vh;
+  width: 60vw;
+  object-fit: cover;
+  z-index: 1; 
+  transition: transform 1.2s cubic-bezier(0.65, 0, 0.35, 1), opacity 1.5s ease 0.3s;
+}
+
+#left-stone {
+  left: 0;
+  animation: slideInLeft 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+#right-stone {
+  right: 0;
+  animation: slideInRight 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Clouds & Ghosts */
+#clouds {
+  position: absolute;
+  top: 0;
+  left: 38%; 
+  height: 45vh;
+  opacity: 0.8;
+  z-index: 2; 
+  animation: slideDownClouds 2s ease-out forwards;
+}
+
+#ghosts {
+  position: absolute;
+  bottom: -2%; 
+  right: 30%;
   display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 2; 
+  animation: popUpGhosts 2s ease-out forwards;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+#ghosts img {
+  height: 25vh;
+  object-fit: contain;
 }
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+#ghosts img:nth-child(1) { margin-right: -18vh; transform: scale(0.85); opacity: 0.7; }
+#ghosts img:nth-child(2) { z-index: 3; } 
+#ghosts img:nth-child(3) { margin-left: -18vh; transform: scale(0.85); opacity: 0.7; }
+
+/* Center Clickable Logo Container */
+#center-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  
+  width: 55vw;
+  height: 55vw;
+  max-width: 700px;
+  max-height: 700px;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.8s ease, transform 0.3s ease;
+}
+
+#center-logo:hover {
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+#center-logo img { position: absolute; }
+#candle { height: 60%; z-index: 1; margin-top: 15%; }
+#star { width: 100%; z-index: 2; }
+#remember-text { width: 60%; z-index: 3; }
+
+
+/* --- ON LOAD ANIMATIONS --- */
+@keyframes slideInLeft {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(0%); } 
+}
+@keyframes slideInRight {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(0%); } 
+}
+@keyframes slideDownClouds {
+  0% { transform: translate(-50%, -100%); }
+  100% { transform: translate(-50%, 0); }
+}
+@keyframes popUpGhosts {
+  0% { transform: translateY(100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* --- EXIT ANIMATIONS --- */
+@keyframes slideOutClouds {
+  0% { transform: translate(-50%, 0); opacity: 0.8; }
+  100% { transform: translate(-50%, -100%); opacity: 0; }
+}
+@keyframes slideOutGhosts {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+
+/* --- TRANSITION STATE (Triggered via JS) --- */
+body.transitioning #full-bg {
+  opacity: 1; /* Fade in new background */
+}
+
+body.transitioning .stone {
+  opacity: 0; /* Fade out stones */
+}
+
+body.transitioning #clouds {
+  animation: slideOutClouds 1.2s ease-in forwards;
+}
+
+body.transitioning #ghosts {
+  animation: slideOutGhosts 1.2s ease-in forwards;
+}
+
+body.transitioning #center-logo {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* --- INTERACTION SCENE --- */
+#interaction-scene {
+  position: relative;
+  z-index: 5;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none; 
+}
+
+body.transitioning #interaction-scene {
+  pointer-events: all;
+}
+
+#scannerUI {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90vw;
+  max-width: 900px;
+  opacity: 0;
+  transition: opacity 1s ease;
+  transition-delay: 1.2s; /* Waits for background to settle */
+}
+
+body.transitioning #scannerUI {
+  opacity: 1;
+}
+
+/* Layout for Media Boxes */
+#media-row {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.media-box {
+  width: 280px;
+  height: 200px;
+  background: #e0e0e0; /* The white border frame */
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+
+#webcam, #photoBox {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  background: black;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+#webcam.visible, #photoBox.loaded { opacity: 1; }
+#photoBox.missing { filter: grayscale(100%) blur(1px); opacity: 0.6; }
+
+/* Small Logo in the middle */
+#small-logo {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#small-logo img { position: absolute; }
+#small-candle { height: 60%; z-index: 1; margin-top: 15%; }
+#small-star { width: 100%; z-index: 2; opacity: 0.7;}
+#small-text { width: 60%; z-index: 3; opacity: 0.7; }
+
+/* Text Layout */
+#text-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vanilla:hover {
-  filter: drop-shadow(0 0 2em #f7df1eaa);
+#statusBox {
+  max-width: 600px;
+  color: white;
+  font-size: 16px;
+  line-height: 1.6;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.9s ease, transform 0.7s ease;
 }
 
-.card {
-  padding: 2em;
+#statusBox.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.read-the-docs {
-  color: #888;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
+#restartBtn {
   font-family: inherit;
-  background-color: #1a1a1a;
+  font-size: 16px;
+  padding: 10px 30px;
+  margin-top: 30px;
+  background: transparent;
+  border: 1px solid #fff;
+  color: #fff;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  display: none;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+#restartBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes pulseScan {
+  0%, 100% { color: #ffcccc; }
+  50% { color: white; }
+}
+
+.scanning {
+  animation: pulseScan 1s infinite;
 }

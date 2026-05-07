@@ -1,26 +1,30 @@
+import './style.css';
 import * as faceapi from 'face-api.js';
 
 const video = document.getElementById('webcam');
-const webcamWrapper = document.getElementById('webcamWrapper');
 const statusBox = document.getElementById('statusBox');
 const photoBox = document.getElementById('photoBox');
-const reflectBtn = document.getElementById('reflectBtn');
 const scannerUI = document.getElementById('scannerUI');
 const restartBtn = document.getElementById('restartBtn');
 
+// Intro Elements
+const centerLogo = document.getElementById('center-logo');
+
 // --- Event Listeners ---
 
-reflectBtn.addEventListener('click', () => {
-  reflectBtn.style.display = 'none';
-  scannerUI.classList.add('visible');
-  startScanner();
+centerLogo.addEventListener('click', () => {
+  document.body.classList.add('transitioning');
+  
+  // Wait for background crossfade to finish before starting heavy AI load
+  setTimeout(() => {
+    startScanner();
+  }, 1500); 
 });
 
 restartBtn.addEventListener('click', () => {
   restartBtn.style.display = 'none';
   photoBox.classList.remove('loaded', 'missing');
-  photoBox.src = './images/question.png'; // Updated to relative path
-  webcamWrapper.classList.remove('lifted');
+  photoBox.src = '/images/question.png'; 
   statusBox.classList.remove('visible');
   scanUserAge();
 });
@@ -34,16 +38,16 @@ function startScanner() {
       video.classList.add('visible');
       try {
         updateStatus('🔁 Loading AI models...');
-        // Updated all paths to ./models for GitHub Pages compatibility
+        
         await Promise.all([
-          faceapi.nets.ssdMobilenetv1.loadFromUri('./models'),
-          faceapi.nets.faceLandmark68Net.loadFromUri('./models'),
-          faceapi.nets.faceExpressionNet.loadFromUri('./models'),
-          faceapi.nets.ageGenderNet.loadFromUri('./models')
+          faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
+          faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
+          faceapi.nets.faceExpressionNet.loadFromUri('/models'),
+          faceapi.nets.ageGenderNet.loadFromUri('/models')
         ]);
         scanUserAge();
       } catch (err) {
-        updateStatus('❌ Failed to load face models.\nCheck ./models folder.');
+        updateStatus('❌ Failed to load face models.<br>Check /models folder.');
         console.error('Model load error:', err);
       }
     };
@@ -53,10 +57,10 @@ function startScanner() {
   });
 }
 
-function updateStatus(text) {
+function updateStatus(htmlContent) {
   statusBox.classList.remove('visible');
   setTimeout(() => {
-    statusBox.innerText = text;
+    statusBox.innerHTML = htmlContent; // Using innerHTML for multi-line styling
     statusBox.classList.add('visible');
   }, 50);
 }
@@ -68,7 +72,6 @@ async function scanUserAge() {
 
   statusBox.classList.add('scanning');
   updateStatus('🔍 Initializing scan... please stay still.');
-  webcamWrapper.classList.remove('lifted');
 
   const detectorOptions = new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 });
 
@@ -133,8 +136,7 @@ function showArchiveMessage(age) {
     .reduce((prev, curr) => Math.abs(curr - age) < Math.abs(prev - age) ? curr : prev);
 
   const match = sampleMatches[closest];
-  // Updated image paths to relative ./images/
-  const imgSrc = match.img ? `./images/${match.img}` : './images/question.png';
+  const imgSrc = match.img ? `/images/${match.img}` : '/images/question.png';
 
   photoBox.classList.remove('loaded', 'missing');
   photoBox.style.opacity = 0;
@@ -147,15 +149,17 @@ function showArchiveMessage(age) {
   if (match.img) {
     photoBox.src = imgSrc;
   } else {
-    photoBox.src = './images/question.png';
+    photoBox.src = '/images/question.png';
     photoBox.classList.add('missing');
     photoBox.style.opacity = 1;
   }
 
-  updateStatus(
-    `📍 Age detected: ${age}\n🕯 ${match.story}\n${match.quote}\n\nThat could have been you.`
-  );
+  // Inject formatted HTML matching your mockup design
+  updateStatus(`
+    <div style="color: #bbb; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px;">Age detected: ${age}</div>
+    <div style="margin-bottom: 25px;">${match.story}</div>
+    <div style="font-style: italic; color: #ccc;">${match.quote}</div>
+  `);
 
-  webcamWrapper.classList.add('lifted');
   restartBtn.style.display = 'inline-block';
 }
